@@ -22,7 +22,7 @@ import net.syncthing.java.core.utils.NetworkUtils
 import org.slf4j.LoggerFactory
 import java.io.DataInputStream
 import java.io.DataOutputStream
-import java.nio.ByteBuffer
+import java.io.IOException
 
 object HelloMessageHandler {
     private val logger = LoggerFactory.getLogger(HelloMessageHandler::class.java)
@@ -38,39 +38,45 @@ object HelloMessageHandler {
         )
     }
 
-    private fun sendHelloMessage(message: BlockExchangeProtos.Hello, outputStream: DataOutputStream) {
-        sendHelloMessage(message.toByteArray(), outputStream)
-    }
-
-    private fun sendHelloMessage(payload: ByteArray, outputStream: DataOutputStream) {
+    /**
+     * Sends the
+     * [pre-authentication message](https://docs.syncthing.net/specs/bep-v1.html#pre-authentication-messages) containing
+     * the [message] to the remote client.
+     *
+     * @param outputStream will be flushed, but not closed.
+     * @throws IOException if there is a problem writing to the [outputStream].
+     */
+    @Throws(IOException::class)
+    internal fun sendHelloMessage(message: BlockExchangeProtos.Hello, outputStream: DataOutputStream) {
         logger.debug("Sending hello message")
 
         outputStream.apply {
-            write(
-                    ByteBuffer.allocate(6).apply {
-                        putInt(ConnectionConstants.MAGIC)
-                        putShort(payload.size.toShort())
-                    }.array()
-            )
-            write(payload)
+            writeInt(ConnectionConstants.MAGIC)
+            writeShort(message.serializedSize)
+            message.writeTo(this)
             flush()
         }
     }
 
-    fun receiveHelloMessage(
-            inputStream: DataInputStream
-    ): BlockExchangeProtos.Hello {
+    /**
+     * Receives the
+     * [pre-authentication message](https://docs.syncthing.net/specs/bep-v1.html#pre-authentication-messages) from the
+     * remote party.
+     *
+     * @param inputStream is not closed by this function.
+     *
+     * @throws IOException if the [inputStream] does not begin with [ConnectionConstants.MAGIC], or if the indicated
+     * size of the [BlockExchangeProtos.Hello] is `0`, or if the [BlockExchangeProtos.Hello] cannot be parsed.
+     */
+    @Throws(IOException::class)
+    fun receiveHelloMessage(inputStream: DataInputStream): BlockExchangeProtos.Hello {
         val magic = inputStream.readInt()
         NetworkUtils.assertProtocol(magic == ConnectionConstants.MAGIC) {"magic mismatch, got $magic"}
 
-        val length = inputStream.readShort().toInt()
+        val length = inputStream.readShort()
         NetworkUtils.assertProtocol(length > 0) {"invalid length, must be > 0, got $length"}
 
-        return BlockExchangeProtos.Hello.parseFrom(
-                ByteArray(length).apply {
-                    inputStream.readFully(this)
-                }
-        )
+        return BlockExchangeProtos.Hello.parseFrom(inputStream)
     }
 
     suspend fun processHelloMessage(
