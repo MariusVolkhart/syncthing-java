@@ -25,6 +25,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 
 private val logger = LoggerFactory.getLogger("net.syncthing.java.bep.connectionactor.HelloMessageHandler")
+private const val MAGIC = 0x2EA7D90B
 
 /**
  * Creates a new [BlockExchangeProtos.Hello] instance populated with data from the [configuration].
@@ -48,7 +49,7 @@ internal fun sendPreAuthenticationMessage(message: BlockExchangeProtos.Hello, ou
     logger.debug("Sending pre-authentication message")
 
     outputStream.apply {
-        writeInt(ConnectionConstants.MAGIC)
+        writeInt(MAGIC)
         writeShort(message.serializedSize)
         message.writeTo(this)
         flush()
@@ -62,13 +63,13 @@ internal fun sendPreAuthenticationMessage(message: BlockExchangeProtos.Hello, ou
  *
  * @param inputStream is not closed by this function.
  *
- * @throws IOException if the [inputStream] does not begin with [ConnectionConstants.MAGIC], or if the indicated
+ * @throws IOException if the [inputStream] does not begin with [MAGIC], or if the indicated
  * size of the [BlockExchangeProtos.Hello] is `0`, or if the [BlockExchangeProtos.Hello] cannot be parsed.
  */
 @Throws(IOException::class)
 fun receivePreAuthenticationMessage(inputStream: DataInputStream): BlockExchangeProtos.Hello {
     val magic = inputStream.readInt()
-    NetworkUtils.assertProtocol(magic == ConnectionConstants.MAGIC) {"magic mismatch, got $magic"}
+    NetworkUtils.assertProtocol(magic == MAGIC) {"magic mismatch, got $magic"}
 
     val length = inputStream.readShort()
     NetworkUtils.assertProtocol(length > 0) {"invalid length, must be > 0, got $length"}
