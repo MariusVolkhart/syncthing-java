@@ -23,7 +23,7 @@ class HelloMessageHandlerTest {
       val output = ByteArrayOutputStream()
 
       // The stream must be buffered, because sockets are, and we want to ensure that the function flushes the stream.
-      sendHelloMessage(hello, DataOutputStream(output.buffered()))
+      sendPreAuthenticationMessage(hello, DataOutputStream(output.buffered()))
       assertThat(output.toByteArray()).isEqualTo(wireContent)
     }
 
@@ -37,7 +37,7 @@ class HelloMessageHandlerTest {
       // The stream must be buffered, because sockets are
       val input = wireContent.inputStream().buffered()
 
-      val actual = receiveHelloMessage(DataInputStream(input))
+      val actual = receivePreAuthenticationMessage(DataInputStream(input))
       assertThat(actual).isEqualTo(hello)
     }
 

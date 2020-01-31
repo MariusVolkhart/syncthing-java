@@ -46,8 +46,8 @@ object ConnectionActor {
                 val outputStream = DataOutputStream(socket.outputStream)
 
                 val helloMessage = coroutineScope {
-                    async { sendHelloMessage(configuration, outputStream) }
-                    async { receiveHelloMessage(inputStream) }.await()
+                    async { sendPreAuthenticationMessage(configuration, outputStream) }
+                    async { receivePreAuthenticationMessage(inputStream) }.await()
                 }
 
                 // the hello message exchange should happen before the certificate validation

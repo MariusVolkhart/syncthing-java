@@ -26,8 +26,8 @@ import java.io.IOException
 
 private val logger = LoggerFactory.getLogger("net.syncthing.java.bep.connectionactor.HelloMessageHandler")
 
-fun sendHelloMessage(configuration: Configuration, outputStream: DataOutputStream) {
-    sendHelloMessage(
+fun sendPreAuthenticationMessage(configuration: Configuration, outputStream: DataOutputStream) {
+    sendPreAuthenticationMessage(
             BlockExchangeProtos.Hello.newBuilder()
                     .setClientName(configuration.clientName)
                     .setClientVersion(configuration.clientVersion)
@@ -46,8 +46,8 @@ fun sendHelloMessage(configuration: Configuration, outputStream: DataOutputStrea
  * @throws IOException if there is a problem writing to the [outputStream].
  */
 @Throws(IOException::class)
-internal fun sendHelloMessage(message: BlockExchangeProtos.Hello, outputStream: DataOutputStream) {
-    logger.debug("Sending hello message")
+internal fun sendPreAuthenticationMessage(message: BlockExchangeProtos.Hello, outputStream: DataOutputStream) {
+    logger.debug("Sending pre-authentication message")
 
     outputStream.apply {
         writeInt(ConnectionConstants.MAGIC)
@@ -68,7 +68,7 @@ internal fun sendHelloMessage(message: BlockExchangeProtos.Hello, outputStream: 
  * size of the [BlockExchangeProtos.Hello] is `0`, or if the [BlockExchangeProtos.Hello] cannot be parsed.
  */
 @Throws(IOException::class)
-fun receiveHelloMessage(inputStream: DataInputStream): BlockExchangeProtos.Hello {
+fun receivePreAuthenticationMessage(inputStream: DataInputStream): BlockExchangeProtos.Hello {
     val magic = inputStream.readInt()
     NetworkUtils.assertProtocol(magic == ConnectionConstants.MAGIC) {"magic mismatch, got $magic"}
 
