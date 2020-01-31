@@ -1,8 +1,8 @@
 language: java
+dist: xenial
 jdk:
   - openjdk8
   - openjdk11
-dist: bionic
 
 # Cache gradle dependencies
 # https://docs.travis-ci.com/user/languages/android/#Caching
