@@ -46,7 +46,7 @@ object ConnectionActor {
                 val outputStream = DataOutputStream(socket.outputStream)
 
                 val helloMessage = coroutineScope {
-                    async { sendPreAuthenticationMessage(configuration, outputStream) }
+                    async { sendPreAuthenticationMessage(newHelloInstance(configuration), outputStream) }
                     async { receivePreAuthenticationMessage(inputStream) }.await()
                 }
 

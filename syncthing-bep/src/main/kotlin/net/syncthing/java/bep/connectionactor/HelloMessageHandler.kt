@@ -26,16 +26,14 @@ import java.io.IOException
 
 private val logger = LoggerFactory.getLogger("net.syncthing.java.bep.connectionactor.HelloMessageHandler")
 
-fun sendPreAuthenticationMessage(configuration: Configuration, outputStream: DataOutputStream) {
-    sendPreAuthenticationMessage(
-            BlockExchangeProtos.Hello.newBuilder()
-                    .setClientName(configuration.clientName)
-                    .setClientVersion(configuration.clientVersion)
-                    .setDeviceName(configuration.localDeviceName)
-                    .build(),
-            outputStream
-    )
-}
+/**
+ * Creates a new [BlockExchangeProtos.Hello] instance populated with data from the [configuration].
+ */
+internal fun newHelloInstance(configuration: Configuration) = BlockExchangeProtos.Hello.newBuilder()
+    .setClientName(configuration.clientName)
+    .setClientVersion(configuration.clientVersion)
+    .setDeviceName(configuration.localDeviceName)
+    .build()
 
 /**
  * Sends the
