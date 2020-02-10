@@ -19,12 +19,12 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.utils.NetworkUtils
-import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.LogManager
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 
-private val logger = LoggerFactory.getLogger("net.syncthing.java.bep.connectionactor.HelloMessageHandler")
+private val LOGGER = LogManager.getLogger("net.syncthing.java.bep.connectionactor.HelloMessageHandler")
 private const val MAGIC = 0x2EA7D90B
 
 /**
@@ -46,7 +46,7 @@ internal fun newHelloInstance(configuration: Configuration) = BlockExchangeProto
  */
 @Throws(IOException::class)
 internal fun sendPreAuthenticationMessage(message: BlockExchangeProtos.Hello, outputStream: DataOutputStream) {
-    logger.debug("Sending pre-authentication message")
+    LOGGER.atDebug().log("Sending pre-authentication message.")
 
     outputStream.apply {
         writeInt(MAGIC)
@@ -82,7 +82,10 @@ suspend fun processHelloMessage(
         configuration: Configuration,
         deviceId: DeviceId
 ) {
-    logger.info("Received hello message, deviceName=${hello.deviceName}, clientName=${hello.clientName}, clientVersion=${hello.clientVersion}")
+    LOGGER.atInfo().log("Received hello message: containing device name ({}), client name ({}), and client version ({}).",
+            hello.deviceName,
+            hello.clientName,
+            hello.clientVersion)
 
     // update the local device name
     configuration.update { oldConfig ->
