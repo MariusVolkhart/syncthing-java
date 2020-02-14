@@ -30,7 +30,6 @@ import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.interfaces.IndexRepository
 import net.syncthing.java.core.interfaces.IndexTransaction
 import net.syncthing.java.core.interfaces.TempRepository
-import org.apache.commons.lang3.tuple.Pair
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
@@ -172,7 +171,7 @@ class IndexHandler(
 
                 FileInfo.checkBlocks(fileInfo, fileBlocks)
 
-                Pair.of(fileInfo, fileBlocks)
+                Pair(fileInfo, fileBlocks)
             }
         }
     }
