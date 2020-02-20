@@ -18,7 +18,6 @@ import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.interfaces.RelayConnection
 import net.syncthing.java.core.utils.NetworkUtils
 import org.apache.commons.codec.binary.Base32
-import org.apache.commons.lang3.tuple.Pair
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -137,12 +136,12 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         fun generateKeystore(): Triple<DeviceId, ByteArray, String> {
             val keystoreAlgorithm = getKeystoreAlgorithm(null)
             val keystore = generateKeystore(keystoreAlgorithm)
-            val keystoreHandler = KeystoreHandler(keystore.left)
+            val keystoreHandler = KeystoreHandler(keystore.first)
             val keystoreData = keystoreHandler.exportKeystoreToData()
             val hash = MessageDigest.getInstance("SHA-256").digest(keystoreData)
             keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = keystoreHandler
-            logger.info("keystore ready, device id = {}", keystore.right)
-            return Triple(keystore.right, keystoreData, keystoreAlgorithm)
+            logger.info("keystore ready, device id = {}", keystore.second)
+            return Triple(keystore.second, keystoreData, keystoreAlgorithm)
         }
 
         fun loadKeystore(configuration: Configuration): KeystoreHandler {
@@ -153,9 +152,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             }
             val keystoreAlgo = getKeystoreAlgorithm(configuration.keystoreAlgorithm)
             val keystore = importKeystore(configuration.keystoreData, keystoreAlgo)
-            val keystoreHandler = KeystoreHandler(keystore.left)
+            val keystoreHandler = KeystoreHandler(keystore.first)
             keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = keystoreHandler
-            logger.info("keystore ready, device id = {}", keystore.right)
+            logger.info("keystore ready, device id = {}", keystore.second)
             return keystoreHandler
         }
 
@@ -187,7 +186,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certChain = arrayOfNulls<Certificate>(1)
                 certChain[0] = JcaX509CertificateConverter().getCertificate(certificateHolder)
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
-                return Pair.of(keyStore, deviceId)
+                return Pair(keyStore, deviceId)
             } catch (e: OperatorCreationException) {
                 throw CryptoException(e)
             } catch (e: CertificateException) {
@@ -211,7 +210,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val derData = certificate.encoded
                 val deviceId = derDataToDeviceId(derData)
                 logger.debug("loaded device id from cert = {}", deviceId)
-                return Pair.of(keyStore, deviceId)
+                return Pair(keyStore, deviceId)
             } catch (e: NoSuchAlgorithmException) {
                 throw CryptoException(e)
             } catch (e: KeyStoreException) {
